@@ -67,4 +67,15 @@ public class FarmerService {
 
         return ResponseEntity.status(HttpStatus.OK).body(details + " crop Details " + cropDetail);
     }
+
+    public ResponseEntity<String> home() {
+        try {
+            return ResponseEntity.ok("This is farmer servic3");
+        }catch (Exception e) {
+            String err = "Err in farmer service -> home " + e.getMessage();
+            log.error(err);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+        }
+    }
 }

@@ -17,6 +17,11 @@ public class FarmerController {
 
     private final FarmerService farmerService;
 
+    @GetMapping("")
+    public ResponseEntity<String> home() {
+        return farmerService.home();
+    }
+
     @PostMapping("/crop")
     public ResponseEntity<String> addCrop(@RequestBody CropDto cropDto,
                                         @RequestHeader("X-User-ID") Integer userId) {
