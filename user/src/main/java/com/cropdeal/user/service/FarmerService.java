@@ -30,20 +30,27 @@ public class FarmerService {
 
     public ResponseEntity<String> addCrop(Integer userId, CropDto cropDto) {
 
-        // Verify user exists and is a farmer
-        if(!userRepository.existsById(userId)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-        User farmer = userRepository.findById(userId).get();
-        if (farmer.getRole() != Role.FARMER) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("unauthorized");
+        try {
+            // Verify user exists and is a farmer
+            if(!userRepository.existsById(userId)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+            User farmer = userRepository.findById(userId).get();
+            if (farmer.getRole() != Role.FARMER) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("unauthorized");
+            }
+
+            // Set the farmer ID in the crop DTO
+            cropDto.setFarmerId(userId);
+
+            // Call crop service via a Feign client
+            return cropServiceClient.addCrop(cropDto);
+        }catch (Exception e) {
+            String errMsg = "Err in FarmerService -> addCrop" + e.getMessage();
+            log.error(errMsg);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errMsg);
         }
 
-        // Set the farmer ID in the crop DTO
-        cropDto.setFarmerId(userId);
-
-        // Call crop service via a Feign client
-        return cropServiceClient.addCrop(cropDto);
     }
 
     public ResponseEntity<String> removeCrop(Integer userId, Integer cropId) {

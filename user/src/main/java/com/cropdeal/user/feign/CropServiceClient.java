@@ -15,20 +15,22 @@ public interface CropServiceClient {
 
 //    @PostMapping("/crop/")
 //    Crop createCrop(@RequestBody CropDto cropDto);
-    @PostMapping("/crop/add")
+    @PostMapping("/api/crop/add")
     ResponseEntity<String> addCrop(@RequestBody CropDto cropDto);
-    @DeleteMapping("/crop/remove/{id}")
+    @DeleteMapping("/api/crop/remove/{id}")
     ResponseEntity<String> removeCropByIdAndFarmerId(@PathVariable int id, @RequestHeader("X-User-ID") Integer userId);
 
-    @GetMapping("/crop/find/all/{farmerId}")
+    @GetMapping("/api/crop/find/all/{farmerId}")
     ResponseEntity<List<CropDto>> findByFarmerId(@PathVariable int farmerId);
 
-    @GetMapping("/crop/find/all")
+    @GetMapping("/api/crop/find/all")
     ResponseEntity<List<CropDto>> findAllCrop();
 
 
-
-    @GetMapping("/crop/find/{cropId}")
+    @GetMapping("/api/crop/find/{cropId}")
     ResponseEntity<CropDto> findByCropId(@PathVariable int cropId);
+
+    @DeleteMapping("/api/crop/remove/id/{id}")
+    public ResponseEntity<String> removeCropById(@PathVariable int id);
 
 }

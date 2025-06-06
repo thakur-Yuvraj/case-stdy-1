@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.StringReader;
 import java.util.List;
 
 @RestController
@@ -29,6 +30,11 @@ public class Controller {
     @DeleteMapping("/remove/{id}")
     public ResponseEntity<String> removeCropByIdAndFarmerId(@PathVariable int id, @RequestHeader("X-User-ID") Integer userId) {
         return cropService.removeCropByIdAndFarmerId(id, userId);
+    }
+
+    @DeleteMapping("/remove/id/{id}")
+    public ResponseEntity<String> removeCropById(@PathVariable int id) {
+        return cropService.removeCropById(id);
     }
 
     @GetMapping("/find/all")

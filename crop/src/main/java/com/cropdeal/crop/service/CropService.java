@@ -3,6 +3,7 @@ package com.cropdeal.crop.service;
 import com.cropdeal.crop.dto.CropDto;
 import com.cropdeal.crop.model.Crop;
 import com.cropdeal.crop.repository.CropRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -125,6 +126,22 @@ public class CropService {
         }
         else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<String> removeCropById(int id) {
+        try {
+            if(!cropRepository.existsById(id)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found");
+            }
+            cropRepository.deleteById(id);
+            return ResponseEntity.ok("Crop with id :"+ id + " deleted Successfully");
+        }
+        catch (Exception e) {
+            String errMsg = "Err in Crop Service -> removeCropById " + e.getMessage();
+            log.error(errMsg);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errMsg);
         }
     }
 }
