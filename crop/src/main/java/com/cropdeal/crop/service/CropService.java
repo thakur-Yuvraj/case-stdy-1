@@ -23,7 +23,7 @@ public class CropService {
         try {
             return ResponseEntity.ok("This is homepage");
         } catch (Exception e) {
-            log.info("Err in corp service -> homePage function");
+            log.error("Err in corp service -> homePage function");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Getting error in crop service -> homePage " + e.getMessage());
         }
     }
@@ -40,6 +40,7 @@ public class CropService {
             crop.setPricePerUnit(cropDto.getPricePerUnit());
             crop.setAddress(cropDto.getAddress());
             crop.setIsAvailable(cropDto.getIsAvailable());
+
             if(cropRepository.existsById(crop.getId())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Crop by this id ="+ crop.getId() + " exist in the database");
             }
@@ -143,6 +144,16 @@ public class CropService {
             log.error(errMsg);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errMsg);
         }
+    }
+
+    public ResponseEntity<String> validateCrop(Crop crop) {
+        log.info("validating the crop ___");
+        if(!cropRepository.existsById(crop.getId())) {
+            log.info("Crop not found by id " + crop.getId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Validation Failed");
+        }
+        log.info("Validation completed");
+        return ResponseEntity.ok("Validation Successful");
     }
 }
 

@@ -1,30 +1,25 @@
-package com.cropdeal.auth.service;
+package com.cropdeal.api.util;
 
-import com.cropdeal.auth.modal.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 
 @Service
-public class JWTService {
+public class JWTUtil {
 
-    private String jwtSecret="cfd7a88c9f1460f1ada7b08cf7ad9677f56612935b49af533fbf1b2daa3b887cf8fb091d140c5599ff5512b8b22663d663ab88465c96d3d0b7ba7a8ce1e26c47";
+    private final String jwtSecret="cfd7a88c9f1460f1ada7b08cf7ad9677f56612935b49af533fbf1b2daa3b887cf8fb091d140c5599ff5512b8b22663d663ab88465c96d3d0b7ba7a8ce1e26c47";
 
 
-    public String generateToken(String username, Role role) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role.name()); // Add role to claims
-
+    public String generateToken(String username) {
+        Map<String, Objects> claims = new HashMap<>();
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -71,8 +66,6 @@ public class JWTService {
                 .getPayload();
     }
 
-
-
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -84,5 +77,4 @@ public class JWTService {
     public String extractUserRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
-
 }

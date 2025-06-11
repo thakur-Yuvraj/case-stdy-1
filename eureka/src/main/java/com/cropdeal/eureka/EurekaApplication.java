@@ -13,3 +13,4 @@ public class EurekaApplication {
 		System.out.println("eureka-server running on port 8761");
 	}
 }
+

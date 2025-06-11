@@ -13,7 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/api/auth")
 public class AuthController {
     @Autowired
     AuthService authService;
@@ -22,27 +22,21 @@ public class AuthController {
 
     @PostMapping("register")
     public String addNewUser(@RequestBody UserDto userDto) {
-
-        UserCredential userCredential = UserCredential
-                .builder()
-                .name(userDto.getFullName())
-                .email(userDto.getEmail())
-                .password(userDto.getPassword())
-                .build();
-        return authService.addUser(userCredential);
+        return authService.addUser(userDto);
     }
 
+    // this is for user login
     @PostMapping("token")
-    private String getToken(@RequestBody AuthRequest authRequest) {
+    public String getToken(@RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getName(), authRequest.getPassword()));
         if(authentication.isAuthenticated()) {
-            return authService.generateToken(authRequest.getName());
+            return authService.generateToken(authRequest.getName(), authRequest.getRole());
         }
         return "Invalid Name or password";
     }
 
     @GetMapping("validate")
-    private String validateToken(@RequestParam("token") String token) {
+    public String validateToken(@RequestParam("token") String token) {
         authService.validateToken(token);
         return "Token is valid";
     }

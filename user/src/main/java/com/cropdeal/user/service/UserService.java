@@ -95,7 +95,7 @@ public class UserService {
             }
 
             userRepository.save(user);
-            return ResponseEntity.status(HttpStatus.CREATED)
+            return ResponseEntity.status(HttpStatus.OK)
                     .body("Registered successfully");
 
         } catch (Exception e) {

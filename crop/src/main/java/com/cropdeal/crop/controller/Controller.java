@@ -52,4 +52,9 @@ public class Controller {
         return cropService.findByCropId(cropId);
     }
 
+    @PostMapping("/validate")
+    public ResponseEntity<String> isValidCrop(@RequestBody Crop crop) {
+        return cropService.validateCrop(crop);
+    }
+
 }

@@ -58,7 +58,7 @@ public class AuthConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/auth/register", "/auth/token", "/auth/validate")
+                        .requestMatchers("/api/auth/register", "/api/auth/token", "/api/auth/validate")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
