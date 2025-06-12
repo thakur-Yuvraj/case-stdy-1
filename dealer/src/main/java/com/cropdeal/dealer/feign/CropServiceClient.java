@@ -1,6 +1,7 @@
-package com.cropdeal.user.feign;
+package com.cropdeal.dealer.feign;
 
-import com.cropdeal.user.dto.CropDto;
+
+import com.cropdeal.dealer.dto.CropDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

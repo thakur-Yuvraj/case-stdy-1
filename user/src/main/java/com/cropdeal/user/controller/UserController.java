@@ -23,4 +23,9 @@ public class UserController {
         return userService.register(userDto);
     }
 
+    @PostMapping("/remove/{email}")
+    public ResponseEntity<String> removeUser(@PathVariable String email) {
+        return userService.removeUser(email);
+    }
+
 }
