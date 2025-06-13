@@ -40,5 +40,9 @@ public class AuthController {
         authService.validateToken(token);
         return "Token is valid";
     }
+    @DeleteMapping("/remove/{email}")
+    public String removeUser(@RequestParam String email) {
+        return authService.removeUser(email);
+    }
 }
 

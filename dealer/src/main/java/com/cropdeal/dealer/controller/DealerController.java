@@ -2,6 +2,7 @@ package com.cropdeal.dealer.controller;
 
 
 import com.cropdeal.dealer.dto.CropDto;
+import com.cropdeal.dealer.dto.UserDto;
 import com.cropdeal.dealer.service.DealerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,11 @@ public class DealerController {
     @GetMapping("")
     public ResponseEntity<String> test() {
         return dealerService.test();
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<String> addDealer(@RequestBody UserDto userDto) {
+        return dealerService.createDealer(userDto);
     }
 
     @GetMapping("/find/all/crop")

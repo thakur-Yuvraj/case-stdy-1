@@ -2,6 +2,7 @@ package com.cropdeal.farmer.controller;
 
 
 import com.cropdeal.farmer.dto.CropDto;
+import com.cropdeal.farmer.dto.UserDto;
 import com.cropdeal.farmer.service.FarmerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,11 @@ public class FarmerController {
         return farmerService.home();
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<String> addFarmer(@RequestBody UserDto userDto) {
+        return farmerService.createFarmer(userDto);
+    }
+
     @PostMapping("/crop")
     public ResponseEntity<String> addCrop(@RequestBody CropDto cropDto,
                                         @RequestHeader("X-User-ID") Integer userId) {
@@ -32,8 +38,8 @@ public class FarmerController {
         return farmerService.removeCrop(userId, cropId);
     }
 
-    @GetMapping("/crop/profile/{userId}")
-    public ResponseEntity<String> getProfile(@PathVariable int userId) {
+    @GetMapping("/profile")
+    public ResponseEntity<String> getProfile(@RequestHeader("X-User-ID") int userId) {
         return farmerService.getProfile(userId);
     }
 

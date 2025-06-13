@@ -1,5 +1,6 @@
 package com.cropdeal.admin.controller;
 
+import com.cropdeal.admin.dto.UserDto;
 import com.cropdeal.admin.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,11 @@ public class AdminController {
     @GetMapping("")
     public ResponseEntity<String> home() {
         return adminService.home();
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<String> addFarmer(@RequestBody UserDto userDto) {
+        return adminService.createAdmin(userDto);
     }
 
     @DeleteMapping("remove/user/{email}")

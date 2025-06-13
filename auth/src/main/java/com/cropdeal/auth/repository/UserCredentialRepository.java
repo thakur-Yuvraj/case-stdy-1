@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserCredentialRepository extends JpaRepository<UserCredential, Integer> {
     UserCredential findByName(String username);
+
+    void deleteByEmail(String email);
 }

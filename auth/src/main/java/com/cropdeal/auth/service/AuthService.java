@@ -6,6 +6,7 @@ import com.cropdeal.auth.modal.Role;
 import com.cropdeal.auth.modal.UserCredential;
 import com.cropdeal.auth.repository.UserCredentialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +31,8 @@ public class AuthService {
                 .role(userDto.getRole())
                 .build();
 
-        String responseBody = userServiceClient.register(userDto).getBody();
-        if(responseBody!=null && !responseBody.equals("Registered successfully")) return responseBody;
+        ResponseEntity<String> response = userServiceClient.register(userDto);
+        if(response.getBody()!=null && !response.getStatusCode().is2xxSuccessful() ) return response.getBody();
         userCredential.setPassword(passwordEncoder.encode(userCredential.getPassword()));
         userCredentialRepository.save(userCredential);
         return "User added successfully";
@@ -45,4 +46,9 @@ public class AuthService {
         jwtService.validateToken(token);
     }
 
+    public String removeUser(String email) {
+        userServiceClient.removeUser(email);
+        userCredentialRepository.deleteByEmail(email);
+        return "User deleted";
+    }
 }
