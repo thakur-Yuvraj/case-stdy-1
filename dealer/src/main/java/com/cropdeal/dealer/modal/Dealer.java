@@ -2,12 +2,13 @@ package com.cropdeal.dealer.modal;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@Builder
 @Entity
 public class Dealer {
     @Id
@@ -31,8 +32,8 @@ public class Dealer {
     @Column(nullable = false)
     private String phone;
 
-    @NotBlank(message = "Company name is required")
-    @Column(nullable = false)
+//    @NotBlank(message = "Company name is required")
+//    @Column(nullable = false)
     private String companyName;
 
 //    @NotBlank(message = "GST number is required")

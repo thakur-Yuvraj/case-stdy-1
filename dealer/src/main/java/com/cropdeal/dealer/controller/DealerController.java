@@ -31,9 +31,9 @@ public class DealerController {
         return dealerService.getAllCrop();
     }
 
-    @GetMapping("/purchase/{cropId}")
-    public ResponseEntity<String> purchaseCrop(@PathVariable int cropId) {
-        return dealerService.makePurchase(cropId);
+    @PostMapping("/purchase/{cropId}")
+    public ResponseEntity<String> purchaseCrop(@PathVariable int cropId, @RequestHeader("X-User-ID") Integer userId) {
+        return dealerService.makePurchase(cropId, userId);
     }
 
     @DeleteMapping("/remove/{email}")

@@ -52,7 +52,7 @@ public class UserService {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("Email already exists");
             }
-
+            System.out.println("here");
             User user = User.builder()
                     .email(userDto.getEmail())
                     .password(passwordEncoder.encode(userDto.getPassword()))
@@ -64,11 +64,12 @@ public class UserService {
                     .build();
 
             userRepository.save(user);
-
+            System.out.println("Hello");
             // Delegate role-specific creation using Feign Clients
             switch (userDto.getRole()) {
                 case FARMER -> farmerServiceClient.createFarmer(userDto);
-                case DEALER -> dealerServiceClient.createDealer(userDto);
+                case DEALER -> {
+                    System.out.println(dealerServiceClient.createDealer(userDto)); }
                 case ADMIN -> adminServiceClient.createAdmin(userDto);
             }
 

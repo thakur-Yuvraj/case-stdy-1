@@ -57,4 +57,9 @@ public class Controller {
         return cropService.validateCrop(crop);
     }
 
+    @PostMapping("/makeCropUnavailable/{cropId}")
+    public ResponseEntity<String> disableCrop(@PathVariable int cropId) {
+        return cropService.setAvailabilityToNo(cropId);
+    }
+
 }

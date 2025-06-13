@@ -116,12 +116,23 @@ public class CropService {
         }
     }
 
+    public ResponseEntity<String> setAvailabilityToNo(int cropId) {
+        if(cropRepository.existsById(cropId)) {
+            Crop crop = cropRepository.findById(cropId).get();
+            CropDto cropDto = new CropDto(crop.getFarmerId(), crop.getCropType(), crop.getCropName(), crop.getQuantity(), crop.getPricePerUnit(), crop.getAddress(), crop.getIsAvailable());
+            crop.setIsAvailable("No");
+            cropRepository.save(crop);
+
+        }
+        return ResponseEntity.ok("Crop is set to not available");
+    }
+
     public ResponseEntity<CropDto> findByCropId(int cropId) {
         if(cropRepository.existsById(cropId)) {
             Crop crop = cropRepository.findById(cropId).get();
 
             CropDto cropDto = new CropDto(crop.getFarmerId(), crop.getCropType(), crop.getCropName(), crop.getQuantity(), crop.getPricePerUnit(), crop.getAddress(), crop.getIsAvailable());
-            crop.setIsAvailable("No");
+//            crop.setIsAvailable("No");
             cropRepository.save(crop);
             return ResponseEntity.status(HttpStatus.OK).body(cropDto);
         }

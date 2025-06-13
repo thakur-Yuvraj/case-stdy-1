@@ -12,8 +12,9 @@ import java.util.List;
 public interface CropServiceClient {
     @PostMapping("/api/crop/add")
     ResponseEntity<String> addCrop(@RequestBody CropDto cropDto);
-    @DeleteMapping("/api/crop/remove/{id}")
-    ResponseEntity<String> removeCropByIdAndFarmerId(@PathVariable int id, @RequestHeader("X-User-ID") Integer userId);
+
+//    @DeleteMapping("/api/crop/remove/{id}")
+//    ResponseEntity<String> removeCropByIdAndFarmerId(@PathVariable int id, @RequestHeader("X-User-ID") Integer userId);
 
     @GetMapping("/api/crop/find/all/{farmerId}")
     ResponseEntity<List<CropDto>> findByFarmerId(@PathVariable int farmerId);
@@ -25,7 +26,7 @@ public interface CropServiceClient {
     @GetMapping("/api/crop/find/{cropId}")
     ResponseEntity<CropDto> findByCropId(@PathVariable int cropId);
 
-    @DeleteMapping("/api/crop/remove/id/{id}")
-    public ResponseEntity<String> removeCropById(@PathVariable int id);
+    @PostMapping("/api/crop/makeCropUnavailable/{cropId}")
+    ResponseEntity<String> disableCrop(@PathVariable int cropId);
 
 }

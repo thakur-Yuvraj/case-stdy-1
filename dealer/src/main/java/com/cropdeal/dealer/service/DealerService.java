@@ -2,8 +2,10 @@ package com.cropdeal.dealer.service;
 
 
 import com.cropdeal.dealer.dto.CropDto;
+import com.cropdeal.dealer.dto.PaymentRequestDTO;
 import com.cropdeal.dealer.dto.UserDto;
 import com.cropdeal.dealer.feign.CropServiceClient;
+import com.cropdeal.dealer.feign.PaymentServiceClient;
 import com.cropdeal.dealer.modal.Dealer;
 import com.cropdeal.dealer.repository.DealerRepository;
 import feign.FeignException;
@@ -26,7 +28,11 @@ public class DealerService {
     @Autowired
     private DealerRepository dealerRepository;
 
+    @Autowired
+    PaymentServiceClient paymentServiceClient;
+
     public ResponseEntity<String> createDealer(UserDto userDto) {
+        log.info("Creating user dealer");
         try {
             Dealer dealer = Dealer.builder()
                     .email(userDto.getEmail())
@@ -36,10 +42,10 @@ public class DealerService {
                     .companyName(null)
                     .gstNumber(null)
                     .build();
-
             dealerRepository.save(dealer);
             return ResponseEntity.ok("Dealer registered successfully");
         } catch (Exception e) {
+            log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Dealer creation failed");
         }
     }
@@ -69,15 +75,29 @@ public class DealerService {
         }
     }
 
-    public ResponseEntity<String> makePurchase(int cropId) {
+    public ResponseEntity<String> makePurchase(int cropId, int dealerId) {
 
         try {
             CropDto cropDto = cropServiceClient.findByCropId(cropId).getBody();
             if(cropDto == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Crop Not found");
-            if(cropDto.getIsAvailable().equalsIgnoreCase("No")) {
+            if(!cropDto.getIsAvailable().equalsIgnoreCase("Yes")) {
+                log.info(cropDto.getIsAvailable());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Crop Not available");
             }
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Purchase of crop Successfully");
+            String farmerId = String.valueOf(cropDto.getFarmerId());
+            int totalAmount = (int) (cropDto.getPricePerUnit() * cropDto.getQuantity());
+            PaymentRequestDTO paymentRequest = PaymentRequestDTO
+                    .builder()
+                    .dealerId(String.valueOf(dealerId))
+                    .amount(totalAmount) // calculate
+                    .farmerId(farmerId)
+                    .currency("INR")
+                    .build();
+            ResponseEntity<String> paymentResponse = paymentServiceClient.createOrder(paymentRequest);
+            if(!paymentResponse.getStatusCode().is2xxSuccessful())
+                return paymentResponse;
+            cropServiceClient.disableCrop(cropId);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Purchase of crop was Successfully");
         }
         catch (Exception e) {
             String msg = "Err in DealerService -> makePurchase function ";

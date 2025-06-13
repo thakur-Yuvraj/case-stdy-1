@@ -12,6 +12,7 @@ public class DealerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DealerApplication.class, args);
+		System.out.println("Dealer service running on port 8092");
 	}
 
 }
