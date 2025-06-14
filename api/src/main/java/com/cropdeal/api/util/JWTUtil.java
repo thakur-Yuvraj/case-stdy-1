@@ -5,17 +5,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
 
 @Service
 public class JWTUtil {
 
-    private final String jwtSecret="cfd7a88c9f1460f1ada7b08cf7ad9677f56612935b49af533fbf1b2daa3b887cf8fb091d140c5599ff5512b8b22663d663ab88465c96d3d0b7ba7a8ce1e26c47";
+    private static final String JWT_SECRET="cfd7a88c9f1460f1ada7b08cf7ad9677f56612935b49af533fbf1b2daa3b887cf8fb091d140c5599ff5512b8b22663d663ab88465c96d3d0b7ba7a8ce1e26c47";
 
 
     public String generateToken(String username) {
@@ -31,16 +28,8 @@ public class JWTUtil {
                 .compact();
     }
     public SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public String extractUsername(String token) {
-        return "";
-    }
-    public String extractUserName(String token) {
-        // extract the username from jwt token
-        return extractClaim(token, Claims::getSubject);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
@@ -57,21 +46,13 @@ public class JWTUtil {
     }
 
     public void validateToken(final String token) {
-        SecretKey secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtSecret));
+        SecretKey secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(JWT_SECRET));
 
-        Claims claims = Jwts.parser()
+        Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     public String extractUserRole(String token) {

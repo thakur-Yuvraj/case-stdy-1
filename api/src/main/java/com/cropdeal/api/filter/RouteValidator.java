@@ -4,7 +4,6 @@ import org.springframework.http.server.reactive.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.*;
 import java.util.function.Predicate;
 
 @Component
@@ -16,7 +15,9 @@ public class RouteValidator {
             "/eureka"
     );
 
-    public Predicate<ServerHttpRequest> isSecure =
+    private RouteValidator(){}
+
+    public static final Predicate<ServerHttpRequest> isSecure =
             serverHttpRequest -> openApiEndpoints
                     .stream()
                     .noneMatch(url -> serverHttpRequest.getURI().getPath().contains(url));

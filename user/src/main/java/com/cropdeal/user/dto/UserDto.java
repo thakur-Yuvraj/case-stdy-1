@@ -26,7 +26,7 @@ public class UserDto {
     private String fullName;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone number")
+    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Invalid phone number")
     private String phone;
 
     @NotBlank(message = "Address is required")

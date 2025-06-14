@@ -14,8 +14,7 @@ public class UserApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserApplication.class, args);
-		System.out.println("User service running");
-		log.info("Running");
+		log.info("User service running on port 8081");
 	}
 
 }

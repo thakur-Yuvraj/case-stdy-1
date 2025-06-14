@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.SuperBuilder;
 
 @Data
 @Builder
@@ -26,7 +24,7 @@ public class Dealer {
 
     @NotBlank(message = "Phone number is required")
     @Pattern(
-            regexp = "^\\+?[0-9]{10,15}$",
+            regexp = "^\\+?\\d{10,15}$",
             message = "Invalid phone number format"
     )
     @Column(nullable = false)

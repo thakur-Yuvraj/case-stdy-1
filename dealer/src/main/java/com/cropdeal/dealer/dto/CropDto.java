@@ -8,9 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CropDto {
-//    @NotNull(message = "Crop ID is mandatory")
-//    @Column(unique = true)  // redundant
-//    private int cropId;
 
 //    @NotNull(message = "Farmer ID is mandatory")
     private int farmerId;

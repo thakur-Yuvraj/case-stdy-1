@@ -1,14 +1,14 @@
 package com.cropdeal.payment.service;
 
 import com.cropdeal.payment.dto.PaymentRequestDTO;
+import com.cropdeal.payment.exception.PaymentServiceException;
 import com.cropdeal.payment.model.PaymentTransaction;
 import com.cropdeal.payment.repository.PaymentTransactionRepository;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +16,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
-
-    private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
+    private static final String STATUS = "status";
+    private static final String RECEIPT = "receipt";
+    private static final String CURRENCY = "currency";
+    private static final String AMOUNT = "amount";
 
     @Value("${razorpay.api.key}")
     private String apiKey;
@@ -27,54 +31,45 @@ public class PaymentService {
     @Value("${razorpay.api.secret}")
     private String apiSecret;
 
-    @Autowired
-    private PaymentTransactionRepository paymentTransactionRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public ResponseEntity<String> createOrder(PaymentRequestDTO paymentRequest) {
         try {
-            // Initialize Razorpay client
+            log.info("Creating Razorpay order for amount: {}", paymentRequest.getAmount());
+
             RazorpayClient razorpayClient = new RazorpayClient(apiKey, apiSecret);
 
-            // Create order request
             JSONObject orderRequest = new JSONObject();
-            orderRequest.put("amount", paymentRequest.getAmount() * 100); // Convert to paise
-            orderRequest.put("currency", paymentRequest.getCurrency());
-            orderRequest.put("receipt", generateReceiptId());
+            orderRequest.put(AMOUNT, paymentRequest.getAmount() * 100); // Convert to paise
+            orderRequest.put(CURRENCY, paymentRequest.getCurrency());
+            orderRequest.put(RECEIPT, generateReceiptId());
             orderRequest.put("payment_capture", 1); // Auto-capture payments
 
-            // Add notes for tracking
             JSONObject notes = new JSONObject();
             notes.put("dealer_id", paymentRequest.getDealerId());
             notes.put("farmer_id", paymentRequest.getFarmerId());
             orderRequest.put("notes", notes);
 
-            logger.info("Creating Razorpay order for amount: {}", paymentRequest.getAmount());
-
-            // Create the order on Razorpay
             com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
-            logger.info("Razorpay order created: {}", razorpayOrder.get("id").toString());
+            log.info("Razorpay order created: {}", razorpayOrder.get("id").toString());
 
-            // Save transaction to database
-            PaymentTransaction transaction = saveTransactionToDB(paymentRequest, razorpayOrder);
+            saveTransactionToDB(paymentRequest, razorpayOrder);
 
-            // Prepare response for frontend
             JSONObject response = new JSONObject();
             response.put("id", razorpayOrder.get("id").toString());
-            response.put("amount", razorpayOrder.get("amount").toString());
-            response.put("currency", razorpayOrder.get("currency").toString());
-            response.put("receipt", razorpayOrder.get("receipt").toString());
-            response.put("status", "created");
+            response.put(AMOUNT, razorpayOrder.get(AMOUNT).toString());
+            response.put(CURRENCY, razorpayOrder.get(CURRENCY).toString());
+            response.put(RECEIPT, razorpayOrder.get(RECEIPT).toString());
+            response.put(STATUS, "created");
 
             return ResponseEntity.ok(response.toString());
 
         } catch (RazorpayException e) {
-            logger.error("Razorpay API error while creating order", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"Payment gateway error: " + e.getMessage() + "\"}");
+            log.error("Razorpay API error while creating order", e);
+            throw new PaymentServiceException("Payment gateway error: " + e.getMessage());
         } catch (Exception e) {
-            logger.error("Unexpected error while creating payment order", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"Internal server error\"}");
+            log.error("Unexpected error while creating payment order", e);
+            throw new PaymentServiceException("Internal server error");
         }
     }
 
@@ -88,12 +83,12 @@ public class PaymentService {
                 transaction.setUpdatedAt(LocalDateTime.now());
 
                 paymentTransactionRepository.save(transaction);
-                logger.info("Payment successful for order: {}", razorpayOrderId);
+                log.info("Payment successful for order: {}", razorpayOrderId);
             } else {
-                logger.warn("No transaction found for order ID: {}", razorpayOrderId);
+                log.warn("No transaction found for order ID: {}", razorpayOrderId);
             }
         } catch (Exception e) {
-            logger.error("Error updating payment success status", e);
+            log.error("Error updating payment success status", e);
         }
     }
 
@@ -103,39 +98,37 @@ public class PaymentService {
 
             if (transaction != null) {
                 transaction.setStatus("failed");
-//                transaction.setErrorCode(errorCode);
-//                transaction.setErrorMessage(errorDescription);
                 transaction.setUpdatedAt(LocalDateTime.now());
 
                 paymentTransactionRepository.save(transaction);
-                logger.info("Payment failed for order: {}", razorpayOrderId);
+                log.info("Payment failed for order: {}", razorpayOrderId);
             } else {
-                logger.warn("No transaction found for failed order ID: {}", razorpayOrderId);
+                log.warn("No transaction found for failed order ID: {}", razorpayOrderId);
             }
         } catch (Exception e) {
-            logger.error("Error updating payment failure status", e);
+            log.error("Error updating payment failure status", e);
+            log.info(errorCode);
+            log.info(errorDescription);
         }
     }
 
     public PaymentTransaction verifyPayment(String razorpayPaymentId) throws RazorpayException {
         try {
+            log.info("Verifying payment with ID: {}", razorpayPaymentId);
+
             RazorpayClient razorpayClient = new RazorpayClient(apiKey, apiSecret);
             com.razorpay.Payment payment = razorpayClient.payments.fetch(razorpayPaymentId);
 
             PaymentTransaction transaction = paymentTransactionRepository.findByRazorpayPaymentId(razorpayPaymentId);
 
             if (transaction != null) {
-                if ("captured".equals(payment.get("status"))) {
-                    transaction.setStatus("completed");
-                } else {
-                    transaction.setStatus(payment.get("status").toString());
-                }
+                transaction.setStatus("captured".equals(payment.get(STATUS)) ? "completed" : payment.get(STATUS).toString());
                 paymentTransactionRepository.save(transaction);
             }
 
             return transaction;
         } catch (RazorpayException e) {
-            logger.error("Error verifying payment", e);
+            log.error("Error verifying payment", e);
             throw e;
         }
     }

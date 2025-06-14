@@ -4,12 +4,12 @@ package com.cropdeal.admin.modal;
 import jakarta.persistence.*;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
 
 @Data
-@SuperBuilder
+@Builder
 @Entity
 public class Admin {
     @Id
@@ -27,7 +27,7 @@ public class Admin {
 
     @NotBlank(message = "Phone number is required")
     @Pattern(
-            regexp = "^\\+?[0-9]{10,15}$",
+            regexp = "^\\+?\\d{10,15}$",
             message = "Invalid phone number format"
     )
     @Column(nullable = false)

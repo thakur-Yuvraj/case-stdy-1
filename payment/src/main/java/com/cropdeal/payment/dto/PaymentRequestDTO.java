@@ -3,7 +3,6 @@ package com.cropdeal.payment.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @Data
 @Builder

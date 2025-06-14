@@ -4,12 +4,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
-// it's a custom user details
-public class UserPrincipal implements UserDetails {
-    UserCredential user1;
+
+// ? - Spring Security may need to persist authentication objects across different layers (e.g., session storage, caching mechanisms).
+// - If UserPrincipal needs to be transferred over a network (e.g., via REST or messaging), making it Serializable ensures proper data transmission.
+public class UserPrincipal implements UserDetails, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final transient UserCredential user1;
 
     public UserPrincipal(UserCredential user) {
         this.user1 = user;

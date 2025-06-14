@@ -2,12 +2,12 @@ package com.cropdeal.farmer.service;
 
 import com.cropdeal.farmer.dto.CropDto;
 import com.cropdeal.farmer.dto.UserDto;
+import com.cropdeal.farmer.exception.FarmerServiceException;
 import com.cropdeal.farmer.feign.CropServiceClient;
 import com.cropdeal.farmer.modal.Farmer;
 import com.cropdeal.farmer.repository.FarmerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,20 +16,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class FarmerService {
     private final CropServiceClient cropServiceClient;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private FarmerRepository farmerRepository;
+    private final FarmerRepository farmerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<String> createFarmer(UserDto userDto) {
         try {
+            log.info("Creating farmer with email: {}", userDto.getEmail());
+
             Farmer farmer = Farmer.builder()
                     .email(userDto.getEmail())
                     .fullName(userDto.getFullName())
@@ -39,71 +37,93 @@ public class FarmerService {
                     .build();
 
             farmerRepository.save(farmer);
+            log.info("Farmer {} registered successfully", farmer.getEmail());
+
             return ResponseEntity.ok("Farmer registered successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Farmer creation failed");
+            log.error("Farmer creation failed: {}", e.getMessage());
+            throw new FarmerServiceException("Failed to create farmer");
         }
     }
 
     public ResponseEntity<String> addCrop(Integer userId, CropDto cropDto) {
-
         try {
-            // Verify user exists and is a farmer
-            if(!farmerRepository.existsById(userId)) {
+            log.info("Adding crop for farmer ID: {}", userId);
+
+            if (!farmerRepository.existsById(userId)) {
+                log.warn("Farmer with ID {} not found", userId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
             }
-            Farmer farmer = farmerRepository.findById(userId).get();
-            // Set the farmer ID in the crop DTO
+
             cropDto.setFarmerId(userId);
-
-            // Call crop service via a Feign client
             return cropServiceClient.addCrop(cropDto);
-        }catch (Exception e) {
-            String errMsg = "Err in FarmerService -> addCrop" + e.getMessage();
-            log.error(errMsg);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errMsg);
+        } catch (Exception e) {
+            log.error("Error in FarmerService -> addCrop: {}", e.getMessage());
+            throw new FarmerServiceException("Failed to add crop");
         }
-
     }
 
     public ResponseEntity<String> removeCrop(Integer userId, Integer cropId) {
-        return cropServiceClient.removeCropByIdAndFarmerId(cropId, userId);
+        try {
+            log.info("Removing crop ID {} for farmer ID {}", cropId, userId);
+            return cropServiceClient.removeCropByIdAndFarmerId(cropId, userId);
+        } catch (Exception e) {
+            log.error("Error in FarmerService -> removeCrop: {}", e.getMessage());
+            throw new FarmerServiceException("Failed to remove crop");
+        }
     }
 
     public ResponseEntity<String> getProfile(int userId) {
-        Optional<Farmer> user = farmerRepository.findById(userId);
-        if(user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user exist by this id "+ userId);
+        try {
+            log.info("Fetching profile for farmer ID: {}", userId);
+            Optional<Farmer> user = farmerRepository.findById(userId);
+
+            if (user.isEmpty()) {
+                log.warn("Farmer with ID {} not found", userId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No user exists by this ID " + userId);
+            }
+
+            Farmer user1 = user.get();
+            List<CropDto> cropDetails = cropServiceClient.findByFarmerId(userId).getBody();
+
+            String cropDetail = cropDetails.stream()
+                    .map(CropDto::toString)
+                    .reduce((s, s2) -> s + " " + s2)
+                    .orElse("No crops found");
+
+            return ResponseEntity.ok(user1.toString() + " Crop Details: " + cropDetail);
+        } catch (Exception e) {
+            log.error("Error fetching farmer profile: {}", e.getMessage());
+            throw new FarmerServiceException("Failed to retrieve profile");
         }
-        Farmer user1 = user.get();
-        String details = user1.toString();
-        List<CropDto> cropDetails = cropServiceClient.findByFarmerId(userId).getBody();
-
-        String cropDetail = cropDetails.stream()
-                .map(CropDto::toString)
-                .reduce((s, s2) -> s + " " + s2)
-                .get();
-
-
-        return ResponseEntity.status(HttpStatus.OK).body(details + " crop Details " + cropDetail);
     }
 
     public ResponseEntity<String> home() {
         try {
-            return ResponseEntity.ok("This is farmer servic3");
-        }catch (Exception e) {
-            String err = "Err in farmer service -> home " + e.getMessage();
-            log.error(err);
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+            log.info("Accessing home endpoint for FarmerService");
+            return ResponseEntity.ok("This is Farmer Service");
+        } catch (Exception e) {
+            log.error("Error in FarmerService -> home: {}", e.getMessage());
+            throw new FarmerServiceException("Internal Server Error");
         }
     }
 
     public ResponseEntity<String> removeFarmer(String email) {
-        if(!farmerRepository.existsByEmail(email)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("farmer not found");
+        try {
+            log.info("Removing farmer with email: {}", email);
+
+            if (!farmerRepository.existsByEmail(email)) {
+                log.warn("Farmer not found: {}", email);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Farmer not found");
+            }
+
+            farmerRepository.deleteByEmail(email);
+            log.info("Farmer {} removed successfully", email);
+
+            return ResponseEntity.ok("Farmer removed");
+        } catch (Exception e) {
+            log.error("Error in FarmerService -> removeFarmer: {}", e.getMessage());
+            throw new FarmerServiceException("Failed to remove farmer");
         }
-        farmerRepository.deleteByEmail(email);
-        return ResponseEntity.ok("farmer removed");
     }
 }

@@ -1,7 +1,5 @@
 package com.cropdeal.user.dto;
 
-
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +7,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CropDto {
-//    @NotNull(message = "Crop ID is mandatory")
-//    @Column(unique = true)  // redundant
-//    private int cropId;
-
-//    @NotNull(message = "Farmer ID is mandatory")
     private int farmerId;
 
     @NotBlank(message = "Crop type is mandatory")
